@@ -33,6 +33,7 @@ bVetor_100 <- TRUE # Caso TRUE, 100 pontos e 10 veiculos
 N_populacao <- 20
 N_iteracoes <- 100
 
+
 if (bVetor_100) {
 
   vetor<- c(1:110)
@@ -41,14 +42,14 @@ if (bVetor_100) {
   
   # ------------------ LEITURA das COORDENADAS dos PONTOS
   # ....... Faz a Leitura de um Total de Pontos = (N_pontos + N_veiculos)
-  Pontos_Coord <- read.csv2("Data/110pontos.csv",header=TRUE,sep=";")
+  Pontos_Coord <- read.csv2("Data/110pontos.csv",header=TRUE,sep=",")
   
 } else { # Caso FALSE, 10 pontos e 3 veicul
   
   vetor<- c(1:13)
   N_pontos<-10
   N_veiculos<-3
-  Pontos_Coord <- read.csv2("Data/13pontos.csv",header=TRUE,sep=";")
+  Pontos_Coord <- read.csv2("Data/13pontos.csv",header=TRUE,sep=",")
   
 }
 
@@ -229,6 +230,27 @@ f_Obj_Meta2<- function(x){
   }
   vetor_rota_circ
   
+  # Função que calcula os pesos dentro de um vetor de rota circular
+  
+  Peso <- function(vetorRotaCircular, fator_pp, fator_pn, n_pontos){
+    
+    if (n_pontos >= 100){matPontos <- read.csv2("Data/110pontos.csv",header=TRUE,sep=",")}
+    else {matPontos <- read.csv2("Data/13pontos.csv",header=TRUE,sep=";")}
+    
+    soma_peso <- 0 # Acumulador
+    soma_inicial <- matPontos[vetorRotaCircular[1],4] # valor da capacidade do veiculo
+    for (i in vetorRotaCircular){
+      soma_peso = soma_peso + matPontos[i,4]
+    }
+    soma_peso = soma_peso - (soma_inicial*2) # Retira a capacidade do veiculo
+    
+    if (soma_peso - soma_inicial > 0) {peso_final <- fator_pp * soma_peso}
+    else if (soma_peso - soma_inicial < 0) {peso_final <- fator_pn * soma_peso}
+    else {peso_final <- soma_peso}
+    
+    return(soma_peso)
+  }
+  
   # ***********************************************************************
   #     ------------------- BLOCO No. 07 - INÍCIO -----------------------
   # ***********************************************************************
@@ -236,13 +258,15 @@ f_Obj_Meta2<- function(x){
   # BLOCO No. 07 - Identifica Início/Fim de cada Rota no Vetor de Rotas em Gotas
   #                 Limites das Rotas
   
-  Limites_Rota<-matrix(ncol = 4, nrow = N_veiculos)
+  
+  Limites_Rota<-matrix(ncol = 5, nrow = N_veiculos)
   Pontos_na_Rota <- 0
   for (i in 1:N_veiculos){
     Limites_Rota[i,1] <- N_pontos + i #  .....No. da Rota
     Limites_Rota[i,2] <- which(vetor_rota_circ == N_pontos+i)[1] # ...Início
     Limites_Rota[i,3] <- which(vetor_rota_circ == N_pontos+i)[2] # ...Fim
-    Limites_Rota[i,4] <-  Limites_Rota[i,3] -  Limites_Rota[i,2]
+    Limites_Rota[i,4] <-  Limites_Rota[i,3] -  Limites_Rota[i,2] # ...Distancia
+    Limites_Rota[i,5] <- Peso(vetor_rota_circ, 2, -4, N_pontos)
   }
   Limites_Rota
   
@@ -283,6 +307,8 @@ f_Obj_Meta2<- function(x){
       }
     }
   }
+  
+  
   
   # ------------ CÁLCULO de DISTÃNCIA GLOBAL ==>> FUNÇÃO OBJETIVO ------------
   Distance_Global <- 0
@@ -361,8 +387,17 @@ for (i in 1:2){
 rangeVar 
 
 ## CÁLCULO da SOLUÇÃO ÓTIMA por ABC - Artificial Bee Colony algorithm
+
+# Tempo de Execucao do ABC
+Comeca_Tempo <- Sys.time()
+
 Solucao_ABC <- ABC(f_Obj_Meta2, optimType="MIN", numVar, numPopulation=N_populacao,
                    maxIter=N_iteracoes, rangeVar)
+
+Termina_Tempo <- Sys.time()
+Tempo_exec <- Termina_Tempo - Comeca_Tempo
+Tempo_exec
+
 Solucao_ABC   # ... Vetor de números REAIS (cada posição entre 1 e N_vetor)
 
 Rotas_Solucao.Otima_ajustada <- order(Solucao_ABC)
