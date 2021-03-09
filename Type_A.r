@@ -1,4 +1,5 @@
 rm(list =ls())
+gc()
 
 # _____________________________________________________________________
 # _____________________________________________________________________
@@ -42,7 +43,7 @@ if (bVetor_100) {
   
   # ------------------ LEITURA das COORDENADAS dos PONTOS
   # ....... Faz a Leitura de um Total de Pontos = (N_pontos + N_veiculos)
-  Pontos_Coord <- read.csv2("Data/110pontos.csv",header=TRUE,sep=",")
+  Pontos_Coord <- read.csv2("Data/110pontos2.csv",header=TRUE,sep=",")
   
 } else { # Caso FALSE, 10 pontos e 3 veicul
   
@@ -226,6 +227,7 @@ f_Obj_Meta2<- function(x){
   for (i in 1:N_veiculos) {
     if (i==1)  { K_N_rota <- K_N_rota + N_rota[i] }
     else       {K_N_rota <- K_N_rota + N_rota[i] + 1}
+    
     vetor_rota_circ<- append(vetor_rota_circ, vetor_rota[k[i]], after = K_N_rota)
   }
   vetor_rota_circ
@@ -237,11 +239,17 @@ f_Obj_Meta2<- function(x){
     if (n_pontos >= 100){matPontos <- read.csv2("Data/110pontos.csv",header=TRUE,sep=",")}
     else {matPontos <- read.csv2("Data/13pontos.csv",header=TRUE,sep=";")}
     
+    
     soma_peso <- 0 # Acumulador
-    soma_inicial <- matPontos[vetorRotaCircular[1],4] # valor da capacidade do veiculo
+    
     for (i in vetorRotaCircular){
-      soma_peso = soma_peso + matPontos[i,4]
+      
     }
+    numero_veiculo <- matPontos[vetorRotaCircular[1],4] # valor da capacidade do veiculo
+    soma_inicial <- matPontos[vetorRotaCircular[1],4] # valor da capacidade do veiculo
+    
+      soma_peso = soma_peso + matPontos[i,4]
+  
     soma_peso = soma_peso - (soma_inicial*2) # Retira a capacidade do veiculo
     
     if (soma_peso - soma_inicial > 0) {peso_final <- fator_pp * soma_peso}
